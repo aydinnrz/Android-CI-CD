@@ -1,0 +1,45 @@
+# Gradle files
+.gradle/
+build/
+local.properties
+
+# IDE files
+.idea/
+.idea/caches/
+.idea/libraries/
+.idea/modules.xml
+.idea/workspace.xml
+.idea/navEditor.xml
+.idea/assetWizardSettings.xml
+
+# Operating System files
+.DS_Store
+
+# Android/Java build output
+*.iml
+*.apk
+*.ap_
+*.dex
+bin/
+gen/
+out/
+release/
+proguard/
+*.dm
+output-metadata.json
+
+# Native build files
+.externalNativeBuild/
+.cxx/
+
+# Logs and reports
+*.log
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/
+fastlane/test_output/
+
+# Keystore files
+*.jks
+private_key.pepk
+release-key.keystore
