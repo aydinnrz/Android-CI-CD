@@ -1,0 +1,78 @@
+name: Build and Deploy Staging APK
+
+on:
+  push:
+    branches:
+      - 'release/*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      - name: Setup Java and Gradle
+        uses: ./.github/actions/setup
+      - name: Set build number
+        run: echo "BUILD_NUMBER=$(( ${{ github.run_attempt }} - 1 + ${{ github.run_number }} ))" >> $GITHUB_ENV
+      - name: Print Build Number
+        run: echo "Build Number $BUILD_NUMBER"
+      - name: Build APK
+        run: ./gradlew assembleStaging
+      - name: Sign Staging APK
+        uses: r0adkll/sign-android-release@v1
+        with:
+          releaseDirectory: app/build/outputs/apk/staging/
+          signingKeyBase64: ${{ secrets.KEYSTORE_FILE }}
+          alias: ${{ secrets.KEY_ALIAS }}
+          keyStorePassword: ${{ secrets.KEYSTORE_PASSWORD }}
+          keyPassword: ${{ secrets.KEY_PASSWORD }}
+        env:
+          BUILD_TOOLS_VERSION: "34.0.0"
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4.5.0
+        with:
+          name: build-files
+          path: app/build/outputs/apk/staging/app-staging-unsigned-signed.apk
+
+  ui_tests:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4.1.8
+        with:
+          name: build-files
+      - name: Output Contents
+        run: ls
+      - name: Run UI Tests
+        uses: mobile-dev-inc/action-maestro-cloud@v1.9.7
+        with:
+          api-key: ${{ secrets.MAESTRO_CLOUD_API_KEY }}
+          app-file: ./app-staging-unsigned-signed.apk
+
+  deploy:
+    needs: ui_tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4.1.8
+        with:
+          name: build-files
+      - name: Set Up Ruby
+        uses: ruby/setup-ruby@v1.205.0
+        with:
+          ruby-version: '3.0.0'
+          bundler-cache: true # Automatically installs Bundler and caches gems
+      - name: Install Dependencies
+        run: bundle install
+      - name: Run Fastlane to Upload Staging APK
+        run: bundle exec fastlane upload_staging_apk_to_firebase
+        env:
+          FIREBASE_CLI_TOKEN: ${{ secrets.FIREBASE_CLI_TOKEN }}
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}

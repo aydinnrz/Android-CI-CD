@@ -23,3 +23,12 @@ lane :upload_debug_apk_to_firebase do
     firebase_cli_token: ENV["FIREBASE_CLI_TOKEN"]
   )
 end
+
+desc "Deploy staging version to Firebase"
+lane :upload_staging_apk_to_firebase do
+  firebase_app_distribution(
+    app: ENV["FIREBASE_APP_ID"],
+    apk_path: "./app-staging-unsigned-signed.apk",
+    firebase_cli_token: ENV["FIREBASE_CLI_TOKEN"]
+  )
+end
