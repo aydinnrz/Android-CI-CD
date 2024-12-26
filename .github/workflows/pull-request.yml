@@ -1,0 +1,52 @@
+name: Build and Run Tests
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      - name: Setup Java and Gradle
+        uses: ./.github/actions/setup
+      - name: Build App
+        run: ./gradlew assembleDebug
+
+  static_code_analysis:
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      - name: Setup Java and Gradle
+        uses: ./.github/actions/setup
+      - name: Run Ktlint Check
+        run: ./gradlew ktlintCheck
+      - name: Run Android Lint Check
+        run: ./gradlew lint --continue
+      - name: Upload Lint and Ktlint Artifacts
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint_artifacts
+          path: |
+            **/build/reports/ktlint
+            **/build/reports/lint-results-*
+
+  unit_tests:
+    runs-on: ubuntu-latest
+    needs: [static_code_analysis]
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      - name: Setup Java and Gradle
+        uses: ./.github/actions/setup
+      - name: Run Unit Tests
+        run: ./gradlew test
+
+
+
+
