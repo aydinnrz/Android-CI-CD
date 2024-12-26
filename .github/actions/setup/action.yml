@@ -1,0 +1,27 @@
+name: 'Setup Java and Gradle'
+description: 'Sets up Java and caches Gradle dependencies'
+inputs:
+  java-version:
+    required: true
+    type: string
+    default: '17'
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup JDK
+      uses: actions/setup-java@v4
+      with:
+        java-version: ${{ inputs.java-version }}
+        distribution: 'temurin'
+    - name: Grant execute permission to gradlew
+      run: chmod +x ./gradlew
+      shell: bash
+    - name: Cache Gradle dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
