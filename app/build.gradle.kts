@@ -13,7 +13,7 @@ android {
         applicationId = "dev.androidcicdtraining.androidcicd"
         minSdk = 24
         targetSdk = 34
-        versionName = "1.0.0"
+        versionName = "2.0.0"
         versionCode = getVersionCode(versionName!!)
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
