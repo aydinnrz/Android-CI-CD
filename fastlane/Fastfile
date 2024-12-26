@@ -1,0 +1,25 @@
+# This file contains the fastlane.tools configuration
+# You can find the documentation at https://docs.fastlane.tools
+#
+# For a list of all available actions, check out
+#
+#     https://docs.fastlane.tools/actions
+#
+# For a list of all available plugins, check out
+#
+#     https://docs.fastlane.tools/plugins/available-plugins
+#
+
+# Uncomment the line if you want fastlane to automatically update itself
+# update_fastlane
+
+default_platform(:android)
+
+desc "Deploy test version to Firebase"
+lane :upload_debug_apk_to_firebase do
+  firebase_app_distribution(
+    app: ENV["FIREBASE_APP_ID"],
+    apk_path: "./app-debug.apk",
+    firebase_cli_token: ENV["FIREBASE_CLI_TOKEN"]
+  )
+end
