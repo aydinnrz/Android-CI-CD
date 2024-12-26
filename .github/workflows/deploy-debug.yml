@@ -1,0 +1,51 @@
+name: Build and Deploy Debug APK
+
+on:
+  push:
+    branches:
+      - develop
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      - name: Setup Java and Gradle
+        uses: ./.github/actions/setup
+      - name: Set build number
+        run: echo "BUILD_NUMBER=$(( ${{ github.run_attempt }} - 1 + ${{ github.run_number }} ))" >> $GITHUB_ENV
+      - name: Print Build Number
+        run: echo "Build Number $BUILD_NUMBER"
+      - name: Build APK
+        run: ./gradlew assembleDebug
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4.5.0
+        with:
+          name: build-files
+          path: ./app/build/outputs/apk/debug/app-debug.apk
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4.1.8
+        with:
+          name: build-files
+      - name: Output Contents
+        run: ls
+      - name: Set Up Ruby
+        uses: ruby/setup-ruby@v1.205.0
+        with:
+          ruby-version: '3.0.0'
+          bundler-cache: true # Automatically installs Bundler and caches gems
+      - name: Install Dependencies
+        run: bundle install
+      - name: Run Fastlane to Upload Debug APK
+        run: bundle exec fastlane upload_debug_apk_to_firebase
+        env:
+          FIREBASE_CLI_TOKEN: ${{ secrets.FIREBASE_CLI_TOKEN }}
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}

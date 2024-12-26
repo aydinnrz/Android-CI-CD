@@ -13,8 +13,8 @@ android {
         applicationId = "dev.androidcicdtraining.androidcicd"
         minSdk = 24
         targetSdk = 34
-        versionCode = 1
         versionName = "1.0.0"
+        versionCode = getVersionCode(versionName!!)
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -51,6 +51,14 @@ android {
     buildFeatures {
         compose = true
     }
+}
+
+fun getVersionCode(versionName: String): Int {
+    // get major part of version number(major, minor, patch)
+    val major = versionName.split(".")[0].toInt()
+
+    val buildNumber = System.getenv("BUILD_NUMBER")?.toInt() ?: 0
+    return major * 10000 + buildNumber
 }
 
 dependencies {

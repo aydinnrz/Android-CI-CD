@@ -1,0 +1,13 @@
+appId: dev.androidcicdtraining.androidcicd
+---
+- launchApp
+- assertVisible:
+    text: "0"
+- tapOn:
+    text: "add counter"
+- assertVisible:
+    text: "1"
+- tapOn:
+    text: "add counter"
+- assertVisible:
+    text: "2"
